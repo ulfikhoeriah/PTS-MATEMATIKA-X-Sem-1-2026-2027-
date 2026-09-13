@@ -33,26 +33,77 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         h1, h2, h3 { text-align: center; color: var(--primary); }
-        .warning-box {
-            background-color: #fee2e2;
-            border-left: 5px solid var(--danger);
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 4px;
+        
+        /* Peringatan Curang Baru yang Lebih Tegas */
+        .strict-warning {
+            background-color: #fef2f2;
+            border: 3px solid var(--danger);
+            border-radius: 8px;
+            padding: 25px 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.2);
         }
-        .warning-box h4 { margin-top: 0; color: var(--danger); }
+        .strict-warning h2 {
+            color: #b91c1c;
+            margin-top: 0;
+            font-size: 26px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .strict-warning p {
+            color: #7f1d1d;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .strict-warning .highlight-danger {
+            background: #fee2e2;
+            padding: 12px;
+            border-radius: 5px;
+            color: #991b1b;
+            font-weight: bold;
+            font-size: 18px;
+            border-left: 5px solid #991b1b;
+        }
+        
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; }
         input[type="text"], select {
             width: 100%; padding: 10px; border: 1px solid #ccc;
             border-radius: 5px; box-sizing: border-box; font-size: 16px;
         }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+        }
+        .checkbox-group input {
+            margin-top: 5px;
+            margin-right: 15px;
+            transform: scale(1.5);
+            cursor: pointer;
+        }
+        .checkbox-group label {
+            font-weight: normal;
+            color: #334155;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
         button {
             background-color: var(--primary); color: white; border: none;
-            padding: 12px 20px; font-size: 16px; border-radius: 5px;
+            padding: 15px 20px; font-size: 18px; border-radius: 5px;
             cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px;
+            text-transform: uppercase; letter-spacing: 1px;
         }
         button:hover { background-color: #1d4ed8; }
+        
         .question-card {
             background: #f9fafb; border: 1px solid #e5e7eb;
             padding: 20px; margin-bottom: 20px; border-radius: 8px;
@@ -74,7 +125,7 @@
         .hidden { display: none !important; }
     </style>
 </head>
-<body oncontextmenu="return false;"> <!-- Mencegah klik kanan -->
+<body oncontextmenu="return false;">
 
 <div class="container">
     <!-- BAGIAN IDENTITAS (Awal) -->
@@ -82,9 +133,13 @@
         <h1>PTS Matematika Wajib (Fase E)</h1>
         <h3>Materi: Eksponen | Waktu: 60 Menit</h3>
         
-        <div class="warning-box">
-            <h4>⚠️ PERINGATAN KEJUJURAN</h4>
-            <p>Sistem ini mencatat waktu pengerjaan dan dilengkapi pengacak soal. <b>Dilarang keras</b> membuka tab baru, menyontek, atau bekerja sama. "Orang hebat tidak dihasilkan dari kemudahan dan kecurangan, melainkan dari kesulitan dan kejujuran."</p>
+        <div class="strict-warning">
+            <h2>⚠️ PERINGATAN KERAS! ⚠️</h2>
+            <p>Sistem ujian ini <b>terkoneksi langsung ke server Guru</b> dan mencatat setiap detik aktivitas Anda. Soal dan pilihan ganda telah diacak secara sistem untuk setiap siswa.</p>
+            <p>Dilarang keras membuka tab aplikasi lain, mencoba menyalin soal, menyontek, atau bekerja sama.</p>
+            <div class="highlight-danger">
+                "Siswa yang terdeteksi melakukan kecurangan, nilainya akan otomatis HANGUS (NOL) dan ditindak tegas oleh Bu Ulfi."
+            </div>
         </div>
 
         <div class="form-group">
@@ -115,7 +170,12 @@
         </div>
         <div class="form-group">
             <label for="token">Token Ujian (Minta ke Guru):</label>
-            <input type="text" id="token" placeholder="Masukkan Token Sesi" required>
+            <input type="text" id="token" placeholder="Masukkan Token Sesi" required style="font-weight: bold; color: var(--danger); text-transform: uppercase;">
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="janjiJujur">
+            <label for="janjiJujur"><b>Pakta Integritas:</b> Saya berjanji akan mengerjakan ujian ini dengan jujur dan kemampuan sendiri. Saya bersedia menerima nilai 0 (NOL) jika terbukti melakukan kecurangan.</label>
         </div>
         
         <button onclick="startExam()">MULAI UJIAN</button>
@@ -126,29 +186,29 @@
         <div class="timer" id="timerDisplay">Waktu: 60:00</div>
         <h2>Paket <span id="displayPaket"></span></h2>
         <div id="questions-container"></div>
-        <button onclick="submitExam()" style="background-color: #059669;">KUMPULKAN JAWABAN</button>
+        <button onclick="submitExam()" style="background-color: #059669;">KUMPULKAN JAWABAN SEKARANG</button>
     </div>
 
     <!-- BAGIAN HASIL -->
     <div id="result-section">
         <h1>Ujian Selesai!</h1>
-        <div class="warning-box" style="background-color: #dcfce7; border-left-color: #16a34a;">
-            <h4 style="color: #16a34a;">Terima Kasih</h4>
-            <p>Jawaban kamu telah berhasil disimpan. Kejujuran adalah mata uang yang berlaku di mana-mana.</p>
+        <div class="strict-warning" style="background-color: #dcfce7; border-color: #16a34a; box-shadow: none;">
+            <h2 style="color: #16a34a;">Terima Kasih</h2>
+            <p style="color: #15803d; font-weight: bold; font-size: 18px;">Jawaban dan kejujuranmu telah berhasil terekam di database.</p>
         </div>
-        <p>Silakan tinggalkan ruangan dengan tenang atau tunggu arahan selanjutnya dari Bu Ulfi.</p>
+        <p style="text-align: center; font-size: 18px;">Silakan tutup halaman ini dan tunggu arahan selanjutnya dari Bu Ulfi.</p>
     </div>
 </div>
 
 <script>
     // ========================================================================
-    // KONFIGURASI GURU (SILAKAN UBAH JIKA PERLU)
+    // KONFIGURASI GURU
     // ========================================================================
     const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxgmo8wnpe2b8uxPAWptXMviqrU882xOgsWzYPy8l1cXamiKRidOo0ylltYwJcuyjUNOw/exec';
     
     // TOKEN UJIAN
-    const TOKEN_SESI_1 = "SESI1";
-    const TOKEN_SESI_2 = "SESI2";
+    const TOKEN_SESI_1 = "JayaMath";
+    const TOKEN_SESI_2 = "MathAsik";
     // ========================================================================
 
     const questionsA = [
@@ -206,10 +266,16 @@
         const kelas = document.getElementById('kelas').value;
         const absen = document.getElementById('absen').value;
         const paket = document.getElementById('paket').value;
-        const tokenInput = document.getElementById('token').value.trim();
+        const tokenInput = document.getElementById('token').value.trim().toUpperCase();
+        const janjiJujur = document.getElementById('janjiJujur').checked;
 
         if(!nama || !kelas || !absen || !paket || !tokenInput) {
-            alert("Harap lengkapi semua identitas dan Token!");
+            alert("Harap lengkapi semua data Identitas dan Token Ujian!");
+            return;
+        }
+
+        if(!janjiJujur) {
+            alert("Kamu harus mencentang kotak Pakta Integritas sebelum memulai ujian!");
             return;
         }
 
@@ -296,8 +362,7 @@
             }
         });
 
-        // Hitung persentase skor (Maks skor jika semua benar adalah sekitar 100-110 tergantung komposisi)
-        // Diskalakan ke 100 agar lebih mudah dibaca
+        // Hitung persentase skor disesuaikan skala 100
         let maxPossibleScore = 0;
         currentQuestions.forEach(q => {
             if (q.type === "mudah") maxPossibleScore += 5;
