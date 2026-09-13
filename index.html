@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ujian PTS Matematika - SMA Terpadu Bandung</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']] // Menggunakan standar kurung untuk inline math
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            user-select: none; /* Mencegah copy-paste */
+        }
+        .hidden { display: none !important; }
+        
+        /* Glassmorphism style untuk form dan panel */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Peringatan Animasi Berkedip */
+        .alert-pulse {
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+
+        /* Radio button kustom */
+        .radio-custom:checked + div {
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+        }
+        .radio-custom:checked + div .radio-circle {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        /* Navigasi nomor soal */
+        .nav-btn {
+            transition: all 0.2s;
+        }
+        .nav-btn.answered { background-color: #10b981; color: white; border-color: #10b981; }
+        .nav-btn.active { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); border-color: #3b82f6; background-color: #3b82f6; color: white;}
+    </style>
+</head>
+<body class="min-h-screen text-gray-800 flex flex-col">
+
+    <div id="warningScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-red-900 transition-opacity duration-300 p-4">
+        <div class="glass-panel p-6 md:p-10 rounded-2xl max-w-lg w-full text-center transform scale-100 transition-transform alert-pulse">
+            <div class="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-red-100 mb-6">
+                <svg class="h-14 w-14 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h1 class="text-3xl font-extrabold text-red-700 mb-4 uppercase tracking-wider">Peringatan Keras!</h1>
+            <p class="text-gray-700 mb-6 text-base leading-relaxed text-justify">
+                Ujian ini diawasi secara sistem. <strong>SEGALA BENTUK KECURANGAN (Mencontek, Membuka Tab Baru, Memotret Soal) TIDAK AKAN DITOLERANSI</strong>.
+                <br><br>
+                <em>"Kejujuran adalah perhiasan jiwa yang lebih bersinar daripada nilai seratus hasil kecurangan."</em>
+            </p>
+            <div class="mb-6 flex items-start text-left bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <input type="checkbox" id="jujurCheckbox" class="mt-1 mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer">
+                <label for="jujurCheckbox" class="text-sm text-gray-600 font-medium cursor-pointer">
+                    Saya berjanji akan mengerjakan ujian ini dengan jujur dan tanpa bantuan dari pihak/sumber mana pun.
+                </label>
+            </div>
+            <button onclick="acceptWarning()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 transform hover:scale-105">
+                SAYA MENGERTI & BERJANJI
+            </button>
+        </div>
+    </div>
+
+    <div id="loginScreen" class="hidden flex-grow flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div class="glass-panel p-8 rounded-2xl max-w-md w-full shadow-2xl">
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-bold text-gray-800">PTS MATEMATIKA</h1>
+                <p class="text-gray-500 text-sm mt-1">SMA Terpadu Bandung - Guru: Ulfi Khoeriah, S.Pd</p>
+            </div>
+            <form id="loginForm" onsubmit="startExam(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="nama">Nama Lengkap</label>
+                    <input class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200" id="nama" type="text" placeholder="Masukkan nama lengkap" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="kelas">Kelas</label>
+                    <select class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200 bg-white" id="kelas" required>
+                        <option value="" disabled selected>Pilih Kelas</option>
+                        <option value="X-1">X-1 (Fase E)</option>
+                        <option value="X-2">X-2 (Fase E)</option>
+                        <option value="X-3">X-3 (Fase E)</option>
+                        <option value="X-4">X-4 (Fase E)</option>
+                        <option value="X-5">X-5 (Fase E)</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="absen">No. Absen</label>
+                    <input class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200" id="absen" type="number" min="1" max="50" placeholder="Contoh: 12" required>
+                </div>
+                <div class="mb-8">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="paket">Paket Soal</label>
+                    <select class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200 bg-white" id="paket" required>
+                        <option value="" disabled selected>Pilih Paket Sesuai Instruksi</option>
+                        <option value="A">Paket A</option>
+                        <option value="B">Paket B</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-lg flex justify-center items-center">
+                    Mulai Ujian
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="examScreen" class="hidden flex-col min-h-screen bg-gray-50">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+                <div>
+                    <h2 class="font-bold text-gray-800 text-lg md:text-xl">PTS Matematika - Paket <span id="displayPaket"></span></h2>
+                    <p class="text-xs text-gray-500" id="displayNamaKelas"></p>
+                </div>
+                <div class="flex items-center space-x-2 bg-red-50 px-4 py-2 rounded-lg border border-red-100">
+                    <svg class="w-5 h-5 text-red-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span id="timer" class="font-bold text-red-600 text-lg tabular-nums">60:00</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content (Soal dan Navigasi) -->
+        <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col lg:flex-row gap-6 w-full">
+            
+            <!-- Area Soal -->
+            <div class="w-full lg:w-3/4 flex flex-col">
+                <div class="glass-panel p-6 md:p-8 rounded-2xl flex-grow mb-6 relative">
+                    <div class="flex justify-between items-start mb-6 border-b border-gray-100 pb-4">
+                        <h3 class="text-xl font-bold text-blue-800">Soal No. <span id="questionNumberDisplay">1</span></h3>
+                        <span id="questionDifficulty" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">Sedang</span>
+                    </div>
+                    
+                    <div id="questionContent" class="text-lg text-gray-800 mb-8 leading-relaxed prose prose-blue max-w-none">
+                        <!-- Teks soal akan dimuat di sini -->
+                    </div>
+
+                    <div id="optionsContainer" class="space-y-3">
+                        <!-- Pilihan ganda akan dimuat di sini -->
+                    </div>
+                </div>
+
+                <!-- Tombol Navigasi Bawah -->
+                <div class="flex justify-between items-center mt-auto">
+                    <button onclick="prevQuestion()" id="btnPrev" class="px-6 py-3 bg-white border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                        &larr; Sebelumnya
+                    </button>
+                    <button onclick="nextQuestion()" id="btnNext" class="px-6 py-3 bg-blue-600 border border-transparent rounded-xl text-white font-medium hover:bg-blue-700 transition shadow-sm">
+                        Selanjutnya &rarr;
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sidebar Navigasi -->
+            <div class="w-full lg:w-1/4">
+                <div class="glass-panel p-6 rounded-2xl sticky top-24">
+                    <h3 class="font-bold text-gray-800 mb-4 text-center">Navigasi Soal</h3>
+                    <div id="navigationGrid" class="grid grid-cols-5 gap-2 mb-6">
+                        <!-- Tombol nomor soal akan dimuat di sini -->
+                    </div>
+                    
+                    <div class="border-t border-gray-200 pt-4">
+                        <div class="flex items-center text-sm text-gray-600 mb-2">
+                            <div class="w-4 h-4 rounded bg-emerald-500 mr-2"></div> Sudah Dijawab
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600 mb-6">
+                            <div class="w-4 h-4 rounded border border-gray-300 mr-2"></div> Belum Dijawab
+                        </div>
+                        
+                        <button onclick="confirmSubmit()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow shadow-emerald-200">
+                            KUMPULKAN UJIAN
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="resultScreen" class="hidden flex-grow flex items-center justify-center p-4 bg-gray-900 text-white">
+        <div class="glass-panel bg-opacity-10 bg-gray-800 border-gray-700 p-10 rounded-3xl max-w-md w-full text-center shadow-2xl relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 z-0"></div>
+            <div class="relative z-10">
+                <svg class="w-20 h-20 mx-auto text-emerald-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <h1 class="text-3xl font-bold mb-2">Ujian Selesai!</h1>
+                <p class="text-gray-300 mb-8">Terima kasih <span id="resName" class="font-semibold text-white"></span>, jawabanmu telah terekam di sistem.</p>
+                
+                <div class="bg-gray-800/80 p-6 rounded-2xl border border-gray-600 mb-6">
+                    <p class="text-sm text-gray-400 uppercase tracking-widest mb-1">Skor Akhir</p>
+                    <p class="text-6xl font-black text-white" id="resScore">0</p>
+                </div>
+                
+                <p class="text-sm text-gray-400 mt-8">Silakan tutup browser atau tab ini.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal Data -->
+    <div id="loadingModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black bg-opacity-75">
+        <div class="bg-white p-6 rounded-xl flex flex-col items-center max-w-sm w-full">
+            <svg class="animate-spin h-10 w-10 text-blue-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <h3 class="text-lg font-semibold text-gray-800">Menyimpan Jawaban...</h3>
+            <p class="text-sm text-gray-500 text-center mt-2">Tolong jangan tutup halaman ini.</p>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // URL GOOGLE APPS SCRIPT IBU ULFI (Jangan Diubah)
+        // =========================================================================
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxgmo8wnpe2b8uxPAWptXMviqrU882xOgsWzYPy8l1cXamiKRidOo0ylltYwJcuyjUNOw/exec';
+
+        // =========================================================================
+        // DATABASE SOAL (Transkrip dari dokumen Word)
+        // =========================================================================
+        const bankSoal = [
+            // ================= PAKET A =================
+            {
+                paket: 'A', tipe: 'Mudah', bobot: 1,
+                teks: "Manakah pernyataan yang paling tepat untuk mendefinisikan \\( a^n \\), dengan \\( n \\) bilangan bulat positif?",
+                opsi: [
+                    "\\( a^n = a + a + \\dots + a \\) sebanyak \\( n \\) suku",
+                    "\\( a^n = a \\times a \\times \\dots \\times a \\) sebanyak \\( n \\) faktor",
+                    "\\( a^n = a \\times n \\)",
+                    "\\( a^n = n \\times n \\times \\dots \\times a \\)",
+                    "\\( a^n = a \\) dibagi \\( n \\) kali"
+                ],
+                kunci: "\\( a^n = a \\times a \\times \\dots \\times a \\) sebanyak \\( n \\) faktor"
+            },
+            {
+                paket: 'A', tipe: 'Mudah', bobot: 1,
+                teks: "Pada bentuk bilangan berpangkat \\( 6^4 \\), bilangan 6 disebut .... dan bilangan 4 disebut .....",
+                opsi: ["pangkat; basis", "basis; pangkat", "faktor; basis", "eksponen; basis", "basis; faktor"],
+                kunci: "basis; pangkat"
+            },
+            {
+                paket: 'A', tipe: 'Sedang', bobot: 2,
+                teks: "Diketahui \\( a \\) bilangan real dengan \\( a \\neq 0 \\). Pernyataan yang BENAR tentang \\( a^0 \\) dan \\( a^{-n} \\) (\\( n \\) bulat positif) adalah ....",
+                opsi: [
+                    "\\( a^0 = 0 \\) dan \\( a^{-n} = -a^n \\)",
+                    "\\( a^0 = 1 \\) dan \\( a^{-n} = \\frac{1}{a^n} \\)",
+                    "\\( a^0 = a \\) dan \\( a^{-n} = -\\frac{1}{a^n} \\)",
+                    "\\( a^0 = 1 \\) dan \\( a^{-n} = a^n \\)",
+                    "\\( a^0 = 0 \\) dan \\( a^{-n} = \\frac{1}{a^n} \\)"
+                ],
+                kunci: "\\( a^0 = 1 \\) dan \\( a^{-n} = \\frac{1}{a^n} \\)"
+            },
+            {
+                paket: 'A', tipe: 'Mudah', bobot: 1,
+                teks: "Bentuk sederhana dari \\( a^5 \\times a^3 \\) menurut sifat eksponen adalah ....",
+                opsi: ["\\( a^8 \\)", "\\( a^{15} \\)", "\\( a^2 \\)", "\\( 2a^8 \\)", "\\( a^{53} \\)"],
+                kunci: "\\( a^8 \\)"
+            },
+            {
+                paket: 'A', tipe: 'Sedang', bobot: 2,
+                teks: "Pernyataan berikut yang merupakan sifat eksponen yang BENAR adalah ....",
+                opsi: [
+                    "\\( a^m \\div a^n = a^{m \\times n} \\)",
+                    "\\( (a^m)^n = a^{m+n} \\)",
+                    "\\( a^m \\times a^n = a^{m+n} \\)",
+                    "\\( (ab)^m = a^m + b^m \\)",
+                    "\\( \\left(\\frac{a}{b}\\right)^m = a^m + b^m \\)"
+                ],
+                kunci: "\\( a^m \\times a^n = a^{m+n} \\)"
+            },
+            {
+                paket: 'A', tipe: 'Sedang', bobot: 2,
+                teks: "Nilai \\( p \\) yang memenuhi persamaan \\( (2^4)^2 = 2^p \\) adalah ....",
+                opsi: ["6", "8", "16", "4", "2"],
+                kunci: "8"
+            },
+            {
+                paket: 'A', tipe: 'HOTS', bobot: 3,
+                teks: "Bentuk \\( a^{2/5} \\times a^{3/5} \\) senilai dengan ....",
+                opsi: ["\\( a^{6/25} \\)", "\\( a \\)", "\\( a^{1/5} \\)", "\\( a^{5/25} \\)", "\\( a^{2/3} \\)"],
+                kunci: "\\( a \\)"
+            },
+            {
+                paket: 'A', tipe: 'Sedang', bobot: 2,
+                teks: "Bentuk sederhana dari \\( (2x^3y^{-2})^2 \\) adalah ....",
+                opsi: [
+                    "\\( \\frac{4x^6}{y^4} \\)",
+                    "\\( \\frac{2x^5}{y^2} \\)",
+                    "\\( 4x^5y^{-2} \\)",
+                    "\\( 2x^6y^{-4} \\)",
+                    "\\( 4x^6y^4 \\)"
+                ],
+                kunci: "\\( \\frac{4x^6}{y^4} \\)"
+            },
+            {
+                paket: 'A', tipe: 'Sedang', bobot: 2,
+                teks: "Bentuk sederhana dari \\( \\frac{a^4b^{-2}}{a^{-1}b^3} \\) (dinyatakan dalam pangkat positif) adalah ....",
+                opsi: [
+                    "\\( a^5b^5 \\)",
+                    "\\( \\frac{a^5}{b^5} \\)",
+                    "\\( \\frac{a^3}{b^5} \\)",
+                    "\\( \\frac{a^4}{b^6} \\)",
+                    "\\( a^5b^{-1} \\)"
+                ],
+                kunci: "\\( \\frac{a^5}{b^5} \\)"
+            },
+            {
+                paket: 'A', tipe: 'HOTS', bobot: 3,
+                teks: "Bentuk sederhana dari \\( \\sqrt{x} \\times \\sqrt[3]{x} \\) (\\( x > 0 \\)), dinyatakan dalam bentuk pangkat, adalah ....",
+                opsi: ["\\( x^{5/6} \\)", "\\( x^{1/6} \\)", "\\( x^{2/5} \\)", "\\( x^{1/5} \\)", "\\( x^{6/5} \\)"],
+                kunci: "\\( x^{5/6} \\)"
+            },
+            {
+                paket: 'A', tipe: 'HOTS', bobot: 3,
+                teks: "Bentuk sederhana (setelah dirasionalkan) dari \\( \\frac{8}{\\sqrt{2}} \\) adalah ....",
+                opsi: ["\\( 4\\sqrt{2} \\)", "\\( 2\\sqrt{2} \\)", "\\( 8\\sqrt{2} \\)", "\\( \\sqrt{2} \\)", "\\( 4\\sqrt{8} \\)"],
+                kunci: "\\( 4\\sqrt{2} \\)"
+            },
+            {
+                paket: 'A', tipe: 'Sedang', bobot: 2,
+                teks: "Nilai \\( x \\) yang memenuhi persamaan \\( 2^{x+1} = 32 \\) adalah ....",
+                opsi: ["2", "3", "4", "5", "6"],
+                kunci: "4"
+            },
+            {
+                paket: 'A', tipe: 'HOTS', bobot: 3,
+                teks: "Nilai \\( x \\) yang memenuhi persamaan \\( 9^x = 27^{x-1} \\) adalah ....",
+                opsi: ["1", "2", "3", "4", "5"],
+                kunci: "3"
+            },
+            {
+                paket: 'A', tipe: 'Sedang', bobot: 2,
+                teks: "Suatu populasi bakteri mula-mula berjumlah 40 sel dan membelah menjadi dua setiap jam, sehingga dapat dimodelkan dengan fungsi \\( f(x) = 40 \\cdot 2^x \\), dengan \\( x \\) menyatakan banyak jam yang telah berlalu. Banyak bakteri setelah 3 jam adalah ....",
+                opsi: ["120", "160", "240", "320", "640"],
+                kunci: "320"
+            },
+            {
+                paket: 'A', tipe: 'HOTS', bobot: 3,
+                teks: "Fungsi eksponensial \\( f(x) = n \\cdot a^x \\) (dengan \\( a > 0, a \\neq 1, n \\neq 0 \\)) disebut fungsi peluruhan eksponen apabila ....",
+                opsi: [
+                    "\\( a > 1 \\) dan \\( n > 0 \\)",
+                    "\\( 0 < a < 1 \\)",
+                    "\\( a = 1 \\)",
+                    "\\( a < 0 \\)",
+                    "\\( n = 0 \\)"
+                ],
+                kunci: "\\( 0 < a < 1 \\)"
+            },
+
+            // ================= PAKET B =================
+            {
+                paket: 'B', tipe: 'Mudah', bobot: 1,
+                teks: "Bentuk \\( 7 \\times 7 \\times 7 \\times 7 \\times 7 \\) dinyatakan sebagai bilangan berpangkat ....",
+                opsi: ["\\( 5^7 \\)", "\\( 7^5 \\)", "\\( 7 \\times 5 \\)", "\\( 5 \\times 7 \\)", "35"],
+                kunci: "\\( 7^5 \\)"
+            },
+            {
+                paket: 'B', tipe: 'Mudah', bobot: 1,
+                teks: "Pada bentuk bilangan berpangkat \\( 9^3 \\), bilangan 9 disebut .... dan bilangan 3 disebut .....",
+                opsi: ["pangkat; basis", "basis; pangkat", "faktor; basis", "eksponen; basis", "basis; faktor"],
+                kunci: "basis; pangkat"
+            },
+            {
+                paket: 'B', tipe: 'Sedang', bobot: 2,
+                teks: "Diketahui \\( b \\) bilangan real dengan \\( b \\neq 0 \\). Pernyataan yang BENAR tentang \\( b^0 \\) dan \\( b^{-n} \\) (\\( n \\) bulat positif) adalah ....",
+                opsi: [
+                    "\\( b^0 = 0 \\) dan \\( b^{-n} = -b^n \\)",
+                    "\\( b^0 = 1 \\) dan \\( b^{-n} = \\frac{1}{b^n} \\)",
+                    "\\( b^0 = b \\) dan \\( b^{-n} = -\\frac{1}{b^n} \\)",
+                    "\\( b^0 = 1 \\) dan \\( b^{-n} = b^n \\)",
+                    "\\( b^0 = 0 \\) dan \\( b^{-n} = \\frac{1}{b^n} \\)"
+                ],
+                kunci: "\\( b^0 = 1 \\) dan \\( b^{-n} = \\frac{1}{b^n} \\)"
+            },
+            {
+                paket: 'B', tipe: 'Mudah', bobot: 1,
+                teks: "Bentuk sederhana dari \\( b^4 \\times b^6 \\) menurut sifat eksponen adalah ....",
+                opsi: ["\\( b^{10} \\)", "\\( b^{24} \\)", "\\( b^2 \\)", "\\( 2b^{10} \\)", "\\( b^{46} \\)"],
+                kunci: "\\( b^{10} \\)"
+            },
+            {
+                paket: 'B', tipe: 'Sedang', bobot: 2,
+                teks: "Pernyataan berikut yang merupakan sifat eksponen yang BENAR adalah ....",
+                opsi: [
+                    "\\( a^m \\div a^n = a^{m \\times n} \\)",
+                    "\\( (a^m)^n = a^{m+n} \\)",
+                    "\\( a^m \\times a^n = a^{m+n} \\)",
+                    "\\( (ab)^m = a^m + b^m \\)",
+                    "\\( \\left(\\frac{a}{b}\\right)^m = a^m + b^m \\)"
+                ],
+                kunci: "\\( a^m \\times a^n = a^{m+n} \\)"
+            },
+            {
+                paket: 'B', tipe: 'Sedang', bobot: 2,
+                teks: "Nilai \\( p \\) yang memenuhi persamaan \\( (3^3)^2 = 3^p \\) adalah ....",
+                opsi: ["5", "6", "9", "3", "2"],
+                kunci: "6"
+            },
+            {
+                paket: 'B', tipe: 'HOTS', bobot: 3,
+                teks: "Bentuk \\( b^{3/7} \\times b^{4/7} \\) senilai dengan ....",
+                opsi: ["\\( b^{12/49} \\)", "\\( b \\)", "\\( b^{1/7} \\)", "\\( b^{7/49} \\)", "\\( b^{3/4} \\)"],
+                kunci: "\\( b \\)"
+            },
+            {
+                paket: 'B', tipe: 'Sedang', bobot: 2,
+                teks: "Bentuk sederhana dari \\( (3p^2q^{-3})^2 \\) adalah ....",
+                opsi: [
+                    "\\( \\frac{9p^4}{q^6} \\)",
+                    "\\( \\frac{3p^3}{q^3} \\)",
+                    "\\( 9p^3q^{-3} \\)",
+                    "\\( 3p^4q^{-6} \\)",
+                    "\\( 9p^4q^6 \\)"
+                ],
+                kunci: "\\( \\frac{9p^4}{q^6} \\)"
+            },
+            {
+                paket: 'B', tipe: 'Sedang', bobot: 2,
+                teks: "Bentuk sederhana dari \\( \\frac{p^5q^{-3}}{p^{-2}q^2} \\) (dinyatakan dalam pangkat positif) adalah ....",
+                opsi: [
+                    "\\( p^7q^5 \\)",
+                    "\\( \\frac{p^7}{q^5} \\)",
+                    "\\( \\frac{p^3}{q^5} \\)",
+                    "\\( \\frac{p^5}{q^7} \\)",
+                    "\\( p^7q^{-1} \\)"
+                ],
+                kunci: "\\( \\frac{p^7}{q^5} \\)"
+            },
+            {
+                paket: 'B', tipe: 'HOTS', bobot: 3,
+                teks: "Bentuk sederhana dari \\( \\sqrt{y} \\times \\sqrt[4]{y} \\) (\\( y > 0 \\)), dinyatakan dalam bentuk pangkat, adalah ....",
+                opsi: ["\\( y^{3/4} \\)", "\\( y^{1/4} \\)", "\\( y^{2/6} \\)", "\\( y^{1/8} \\)", "\\( y^{4/3} \\)"],
+                kunci: "\\( y^{3/4} \\)"
+            },
+            {
+                paket: 'B', tipe: 'HOTS', bobot: 3,
+                teks: "Bentuk sederhana (setelah dirasionalkan) dari \\( \\frac{12}{\\sqrt{3}} \\) adalah ....",
+                opsi: ["\\( 4\\sqrt{3} \\)", "\\( 3\\sqrt{3} \\)", "\\( 12\\sqrt{3} \\)", "\\( \\sqrt{3} \\)", "\\( 4\\sqrt{12} \\)"],
+                kunci: "\\( 4\\sqrt{3} \\)"
+            },
+            {
+                paket: 'B', tipe: 'Sedang', bobot: 2,
+                teks: "Nilai \\( x \\) yang memenuhi persamaan \\( 3^{x+1} = 81 \\) adalah ....",
+                opsi: ["1", "2", "3", "4", "5"],
+                kunci: "3"
+            },
+            {
+                paket: 'B', tipe: 'HOTS', bobot: 3,
+                teks: "Nilai \\( x \\) yang memenuhi persamaan \\( 8^x = 16^{x-1} \\) adalah ....",
+                opsi: ["2", "3", "4", "5", "6"],
+                kunci: "4"
+            },
+            {
+                paket: 'B', tipe: 'Sedang', bobot: 2,
+                teks: "Suatu populasi bakteri mula-mula berjumlah 25 sel dan membelah menjadi dua setiap jam, sehingga dapat dimodelkan dengan fungsi \\( f(x) = 25 \\cdot 2^x \\), dengan \\( x \\) menyatakan banyak jam yang telah berlalu. Banyak bakteri setelah 4 jam adalah ....",
+                opsi: ["100", "200", "300", "400", "800"],
+                kunci: "400"
+            },
+            {
+                paket: 'B', tipe: 'HOTS', bobot: 3,
+                teks: "Fungsi eksponensial \\( f(x) = n \\cdot a^x \\) (dengan \\( a > 0, a \\neq 1, n \\neq 0 \\)) disebut fungsi pertumbuhan eksponen apabila ....",
+                opsi: [
+                    "\\( 0 < a < 1 \\)",
+                    "\\( a > 1 \\)",
+                    "\\( a = 1 \\)",
+                    "\\( a < 0 \\)",
+                    "\\( n = 0 \\)"
+                ],
+                kunci: "\\( a > 1 \\)"
+            }
+        ];
+
+        let userData = {};
+        let activeQuestions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = {}; // Menyimpan jawaban siswa
+        let examTimer;
+        let timeLeft = 60 * 60; // 60 menit dalam detik
+        let maxWeight = 32; // Total bobot poin: 3(M) + 14(S) + 15(HOTS) = 32
+
+        function showScreen(screenId) {
+            document.getElementById('warningScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('examScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            
+            document.getElementById(screenId).classList.remove('hidden');
+            
+            if (screenId === 'examScreen') {
+                document.getElementById('examScreen').classList.add('flex');
+            }
+        }
+
+        function acceptWarning() {
+            if (!document.getElementById('jujurCheckbox').checked) {
+                alert("Anda harus menceklis kotak perjanjian jujur terlebih dahulu!");
+                return;
+            }
+            showScreen('loginScreen');
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startExam(e) {
+            e.preventDefault();
+            userData = {
+                nama: document.getElementById('nama').value,
+                kelas: document.getElementById('kelas').value,
+                absen: document.getElementById('absen').value,
+                paket: document.getElementById('paket').value
+            };
+
+            // Ambil soal sesuai paket
+            let filteredQuestions = bankSoal.filter(q => q.paket === userData.paket);
+            
+            // Acak urutan soal
+            activeQuestions = shuffleArray([...filteredQuestions]);
+
+            // Acak opsi jawaban di dalam setiap soal
+            activeQuestions.forEach(q => {
+                q.opsiDiacak = shuffleArray([...q.opsi]);
+            });
+
+            // Update UI Header
+            document.getElementById('displayPaket').innerText = userData.paket;
+            document.getElementById('displayNamaKelas').innerText = `${userData.nama} | ${userData.kelas} | No. ${userData.absen}`;
+
+            showScreen('examScreen');
+            renderNavigation();
+            loadQuestion(0);
+            startTimer();
+        }
+
+        function loadQuestion(index) {
+            currentQuestionIndex = index;
+            const q = activeQuestions[index];
+            
+            // Update Label
+            document.getElementById('questionNumberDisplay').innerText = index + 1;
+            
+            const diffEl = document.getElementById('questionDifficulty');
+            diffEl.innerText = q.tipe;
+            if(q.tipe === 'Mudah') diffEl.className = 'px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700';
+            else if(q.tipe === 'Sedang') diffEl.className = 'px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700';
+            else diffEl.className = 'px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700';
+
+            // Update Teks Soal
+            document.getElementById('questionContent').innerHTML = q.teks;
+
+            // Generate Opsi
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            const labels = ['A', 'B', 'C', 'D', 'E'];
+            
+            q.opsiDiacak.forEach((optText, i) => {
+                const isChecked = userAnswers[index] === optText ? 'checked' : '';
+                
+                const html = `
+                <label class="relative block cursor-pointer group">
+                    <input type="radio" name="answer" value="${encodeURIComponent(optText)}" class="peer sr-only radio-custom" onchange="saveAnswer(${index}, '${encodeURIComponent(optText)}')" ${isChecked}>
+                    <div class="flex items-center p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition duration-200 bg-white">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center mr-4 radio-circle transition duration-200 group-hover:border-blue-400">
+                            <span class="text-sm font-bold text-gray-500 peer-checked:text-white">${labels[i]}</span>
+                        </div>
+                        <div class="text-gray-700 text-base flex-grow font-medium">${optText}</div>
+                    </div>
+                </label>
+                `;
+                optionsContainer.insertAdjacentHTML('beforeend', html);
+            });
+
+            // Update Nav Buttons
+            document.getElementById('btnPrev').disabled = index === 0;
+            const btnNext = document.getElementById('btnNext');
+            if (index === activeQuestions.length - 1) {
+                btnNext.innerHTML = 'Selesai';
+                btnNext.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                btnNext.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+            } else {
+                btnNext.innerHTML = 'Selanjutnya &rarr;';
+                btnNext.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                btnNext.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+            }
+
+            // Render MathJax (Penting agar equation latex terformat)
+            if (window.MathJax) {
+                MathJax.typesetPromise([document.getElementById('questionContent'), document.getElementById('optionsContainer')]).catch(err => console.log('MathJax error:', err));
+            }
+            
+            updateNavUI();
+        }
+
+        function saveAnswer(qIndex, encodedVal) {
+            userAnswers[qIndex] = decodeURIComponent(encodedVal);
+            updateNavUI();
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < activeQuestions.length - 1) {
+                loadQuestion(currentQuestionIndex + 1);
+            } else {
+                confirmSubmit();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                loadQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        function renderNavigation() {
+            const grid = document.getElementById('navigationGrid');
+            grid.innerHTML = '';
+            activeQuestions.forEach((_, i) => {
+                const btn = document.createElement('button');
+                btn.innerText = i + 1;
+                btn.id = `nav-btn-${i}`;
+                btn.className = `nav-btn w-10 h-10 rounded-lg font-bold border border-gray-200 text-gray-600 hover:bg-gray-100 flex items-center justify-center`;
+                btn.onclick = () => loadQuestion(i);
+                grid.appendChild(btn);
+            });
+        }
+
+        function updateNavUI() {
+            activeQuestions.forEach((_, i) => {
+                const btn = document.getElementById(`nav-btn-${i}`);
+                btn.classList.remove('active', 'answered', 'border-gray-200', 'text-gray-600');
+                
+                if (i === currentQuestionIndex) {
+                    btn.classList.add('active');
+                } else if (userAnswers[i] !== undefined) {
+                    btn.classList.add('answered');
+                } else {
+                    btn.classList.add('border-gray-200', 'text-gray-600');
+                }
+            });
+        }
+
+        function startTimer() {
+            examTimer = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(examTimer);
+                    alert("Waktu Habis! Jawaban Anda akan otomatis dikumpulkan.");
+                    processSubmission();
+                    return;
+                }
+                timeLeft--;
+                const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+                const s = (timeLeft % 60).toString().padStart(2, '0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        function confirmSubmit() {
+            let unanswered = activeQuestions.length - Object.keys(userAnswers).length;
+            let msg = unanswered > 0 
+                ? `Masih ada ${unanswered} soal yang belum dijawab! Yakin ingin mengumpulkan sekarang?` 
+                : "Anda sudah menjawab semua soal. Yakin ingin menyelesaikan ujian?";
+            
+            if (confirm(msg)) {
+                processSubmission();
+            }
+        }
+
+        function processSubmission() {
+            clearInterval(examTimer);
+            document.getElementById('loadingModal').classList.remove('hidden');
+            document.getElementById('loadingModal').classList.add('flex');
+
+            let poinDiperoleh = 0;
+            let benar = 0;
+            let salah = 0;
+            let kosong = 0;
+
+            // Hitung Skor berdasarkan Bobot (Mudah:1, Sedang:2, HOTS:3)
+            activeQuestions.forEach((q, index) => {
+                const jawabanUser = userAnswers[index];
+                if (!jawabanUser) {
+                    kosong++;
+                } else if (jawabanUser === q.kunci) {
+                    benar++;
+                    poinDiperoleh += q.bobot;
+                } else {
+                    salah++;
+                }
+            });
+
+            // Konversi ke skala 100
+            let skorAkhir = Math.round((poinDiperoleh / maxWeight) * 100);
+
+            // Persiapkan data untuk Google Sheets
+            const payloadData = {
+                timestamp: new Date().toLocaleString("id-ID"),
+                nama: userData.nama,
+                kelas: userData.kelas,
+                absen: userData.absen,
+                paket: userData.paket,
+                skorAkhir: skorAkhir,
+                benar: benar,
+                salah: salah,
+                kosong: kosong,
+                waktu: document.getElementById('timer').innerText
+            };
+
+            // Kirim via POST Fetch (No-CORS agar tidak error CORS policy di browser siswa)
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', 
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payloadData)
+            }).then(() => {
+                // Karena no-cors, response akan selalu "opaque" sukses.
+                showResult(skorAkhir);
+            }).catch(error => {
+                console.error('Error submitting:', error);
+                // Walaupun error network, tetap tampilkan nilai ke siswa
+                showResult(skorAkhir);
+                alert("Peringatan: Nilai gagal terkirim ke server guru karena masalah jaringan, tapi ujian telah selesai.");
+            });
+        }
+
+        function showResult(score) {
+            document.getElementById('loadingModal').classList.add('hidden');
+            document.getElementById('loadingModal').classList.remove('flex');
+            
+            showScreen('resultScreen');
+            document.getElementById('resName').innerText = userData.nama;
+            document.getElementById('resScore').innerText = score;
+            
+            // Animasi Count up score
+            let counter = 0;
+            let timer = setInterval(() => {
+                counter += 2;
+                if(counter >= score) {
+                    clearInterval(timer);
+                    document.getElementById('resScore').innerText = score;
+                } else {
+                    document.getElementById('resScore').innerText = counter;
+                }
+            }, 20);
+        }
+
+        // Mencegah klik kanan dan inspect element (sederhana)
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123) { return false; } // F12
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)){ return false; } // Ctrl+Shift+I
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)){ return false; } // Ctrl+Shift+J
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)){ return false; } // Ctrl+U
+        }
+    </script>
+</body>
+</html>
